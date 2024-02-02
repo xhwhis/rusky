@@ -1,0 +1,10 @@
+[package]
+name = "rusky"
+version = "0.1.0"
+edition = "2021"
+authors = ["xhwhis <hi@whis.me>"]
+description = "🦀 + 🐶 = Rusky. Modern native git hooks made easy."
+repository = "https://github.com/xhwhis/rusky"
+license = "Unlicense"
+
+[dependencies]
