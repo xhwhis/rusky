@@ -46,7 +46,23 @@ fn main() {
         exit(1)
     }
     let project_dir = String::from_utf8_lossy(&output.stdout);
-    let project_dir = project_dir.trim();
+    let project_dir = project_dir.as_ref();
+
+    let hooks_dir = Path::new(project_dir).join(HOOKS_PATH);
+    if !hooks_dir.exists() {
+        std::fs::create_dir_all(&hooks_dir).expect("failed to create hooks directory");
+    }
+    std::fs::write(hooks_dir.join(".gitignore"), "*").expect("failed to write .gitignore");
+    std::fs::write(hooks_dir.join("rusky"), include_str!("rusky"))
+        .expect("failed to write rusky script");
+
+    for hook in HOOKS {
+        let hook_file = hooks_dir.join(hook);
+        std::fs::write(&hook_file, "#!/usr/bin/env sh\n. \"${0%/*}/rusky\"")
+            .expect("failed to write hook script");
+        std::fs::set_permissions(&hook_file, Permissions::from_mode(0o755))
+            .expect("failed to set hook script permissions");
+    }
 
     let output = Command::new("git")
         .args(["config", "core.hooksPath", HOOKS_PATH])
@@ -55,19 +71,5 @@ fn main() {
     if !output.status.success() {
         eprintln!("failed to set hooks path");
         exit(1)
-    }
-
-    let hooks_dir = Path::new(project_dir).join(HOOKS_PATH);
-    std::fs::create_dir_all(&hooks_dir).expect("failed to execute process");
-    std::fs::write(hooks_dir.join(".gitignore"), "*").expect("failed to execute process");
-    std::fs::write(hooks_dir.join("rusky"), include_str!("rusky"))
-        .expect("failed to execute process");
-
-    for hook in HOOKS {
-        let hook_file = hooks_dir.join(hook);
-        std::fs::write(&hook_file, "#!/usr/bin/env sh\n. \"${0%/*}/rusky\"")
-            .expect("failed to execute process");
-        std::fs::set_permissions(&hook_file, Permissions::from_mode(0o755))
-            .expect("failed to execute process");
     }
 }
