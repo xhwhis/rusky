@@ -1,1 +1,2 @@
 cargo fmt
+commitlint --edit "$1"

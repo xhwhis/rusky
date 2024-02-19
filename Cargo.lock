@@ -4,4 +4,13 @@ version = 3
 
 [[package]]
 name = "rusky"
-version = "0.1.0"
+version = "0.2.1"
+dependencies = [
+ "rusky 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "rusky"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0a82cded710fb29a289eca3f8767cdac93c474b6d04267883d816401550631f9"

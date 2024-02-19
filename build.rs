@@ -1,7 +1,7 @@
 use std::fs::Permissions;
 use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
-use std::process::{exit, Command};
+use std::process::Command;
 
 const HOOKS: &[&str] = &[
     "pre-commit",
@@ -23,7 +23,7 @@ const HOOKS_PATH: &str = ".rusky/_";
 
 fn main() {
     if let Some("0") = option_env!("RUSKY") {
-        println!("RUSKY=0 skip install");
+        println!("cargo:warning=RUSKY=0 skip install");
         return;
     }
 
@@ -32,21 +32,19 @@ fn main() {
         .output()
         .expect("failed to execute process");
     if !output.status.success() {
-        eprintln!("git command not found");
-        exit(1)
+        panic!("git command not found");
     }
     let target_dir = std::env::var("OUT_DIR").expect("failed to get target directory");
     let output = Command::new("git")
-        .current_dir(target_dir)
+        .current_dir(&target_dir)
         .args(["rev-parse", "--show-toplevel"])
         .output()
         .expect("failed to execute process");
     if !output.status.success() {
-        eprintln!("failed to get git root directory");
-        exit(1)
+        panic!("failed to get git root directory");
     }
     let project_dir = String::from_utf8_lossy(&output.stdout);
-    let project_dir = project_dir.as_ref();
+    let project_dir = project_dir.trim();
 
     let hooks_dir = Path::new(project_dir).join(HOOKS_PATH);
     if !hooks_dir.exists() {
@@ -65,11 +63,11 @@ fn main() {
     }
 
     let output = Command::new("git")
+        .current_dir(project_dir)
         .args(["config", "core.hooksPath", HOOKS_PATH])
         .output()
         .expect("failed to execute process");
     if !output.status.success() {
-        eprintln!("failed to set hooks path");
-        exit(1)
+        panic!("failed to set hooks path");
     }
 }

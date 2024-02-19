@@ -24,20 +24,18 @@ fn help() {
         r#"Usage: rusky <command> [args]
 
     Commands:
-        install [dir]    Install rusky to git hooks directory, default to .rusky
-        uninstall        Uninstall rusky from git hooks directory
-        set <file> <cmd> Set command to hook file
-        add <file> <cmd> Add command to hook file
+        install [dir] Install rusky to git hooks directory (default: .rusky)
+        uninstall     Uninstall rusky from git hooks directory
 
     Environment variables:
-        RUSKY=0          Skip install
+        RUSKY=0       Skip install
 
     Examples:
         rusky install
         rusky install .rusky
         rusky uninstall
-        rusky set .rusky/commit-msg "cargo fmt"
-        rusky add .rusky/pre-commit "cargo clippy -- -D warning""#
+        echo "cargo fmt" > .rusky/commit-msg
+        echo "cargo clippy" >> .rusky/pre-commit"#
     );
 }
 
@@ -98,16 +96,6 @@ fn uninstall() {
     }
 }
 
-fn set(file: &str, cmd: &str) {
-    std::fs::write(file, cmd).expect("failed to execute process");
-}
-
-fn add(file: &str, cmd: &str) {
-    let mut content = std::fs::read_to_string(file).expect("failed to execute process");
-    content.push_str(cmd);
-    std::fs::write(file, content).expect("failed to execute process");
-}
-
 fn main() {
     let mut args = std::env::args().skip(1);
 
@@ -127,28 +115,6 @@ fn main() {
             }
             "uninstall" => {
                 uninstall();
-            }
-            "set" => {
-                if let Some(arg1) = args.next() {
-                    if let Some(arg2) = args.next() {
-                        set(&arg1, &arg2);
-                    } else {
-                        help();
-                    }
-                } else {
-                    help();
-                }
-            }
-            "add" => {
-                if let Some(arg1) = args.next() {
-                    if let Some(arg2) = args.next() {
-                        add(&arg1, &arg2);
-                    } else {
-                        help();
-                    }
-                } else {
-                    help();
-                }
             }
             _ => {
                 help();
